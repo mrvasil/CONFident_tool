@@ -54,47 +54,38 @@ class ReportGenerator:
         print(f"\nJSON report saved to {filename}")
     
     def _generate_html_report(self):
-        html_content = """
+        html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>Vulnerability Scan Report</title>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                h1 { color: #333; }
-                .vulnerability { margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
-                .critical { border-left: 5px solid #d9534f; }
-                .high { border-left: 5px solid #f0ad4e; }
-                .medium { border-left: 5px solid #5bc0de; }
-                .low { border-left: 5px solid #5cb85c; }
-                .file { margin-left: 20px; }
-                .lines { font-family: monospace; color: #666; }
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                h1 {{ color: #333; }}
+                .vulnerability {{ margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }}
+                .critical {{ border-left: 5px solid #d9534f; }}
+                .high {{ border-left: 5px solid #f0ad4e; }}
+                .medium {{ border-left: 5px solid #5bc0de; }}
+                .low {{ border-left: 5px solid #5cb85c; }}
+                .file {{ margin-left: 20px; }}
+                .lines {{ font-family: monospace; color: #666; }}
             </style>
         </head>
         <body>
             <h1>Vulnerability Scan Report</h1>
-            <p>Scan time: {scan_time}</p>
-            <p>Total vulnerabilities found: {vuln_count}</p>
+            <p>Scan time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>Total vulnerabilities found: {len(self.vulnerabilities)}</p>
             
             <div class="vulnerabilities">
-        """.format(
-            scan_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            vuln_count=len(self.vulnerabilities)
-        )
+        """
         
         for vuln in self.vulnerabilities:
-            html_content += """
-                <div class="vulnerability {severity}">
-                    <h2>{name} (Severity: {severity_upper})</h2>
-                    <p><strong>Description:</strong> {description}</p>
-                    <p><strong>Recommendation:</strong> {recommendation}</p>
-            """.format(
-                severity=vuln.severity.lower(),
-                severity_upper=vuln.severity.upper(),
-                name=vuln.name,
-                description=vuln.description,
-                recommendation=vuln.recommendation
-            )
+            html_content += f"""
+                <div class="vulnerability {vuln.severity.lower()}">
+                    <h2>{vuln.name} (Severity: {vuln.severity.upper()})</h2>
+                    <p><strong>Description:</strong> {vuln.description}</p>
+                    <p><strong>Recommendation:</strong> {vuln.recommendation}</p>
+            """
             
             if vuln.cve_id:
                 html_content += f"<p><strong>CVE ID:</strong> {vuln.cve_id}</p>"
