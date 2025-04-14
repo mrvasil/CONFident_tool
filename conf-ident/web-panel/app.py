@@ -4,27 +4,35 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash, session
 import json
 import tempfile
 from datetime import datetime
+import uuid
 from scanners.nginx_scanner import NginxScanner
 from scanners.apache_scanner import ApacheScanner
 from utils.report_generator import ReportGenerator
-
+import pdfkit
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = os.urandom(24)
+app.config['SCAN_HISTORY'] = []
+app.config['MAX_HISTORY_SIZE'] = 10
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/scan', methods=['POST'])
+@app.route('/scan', methods=['POST', 'GET'])
 def scan():
-    server_type = request.form.get('server_type')
-    config_path = request.form.get('config_path')
-    output_format = request.form.get('output_format', 'html')
+    if request.method == 'GET':
+        server_type = request.args.get('server_type')
+        config_path = request.args.get('config_path')
+        output_format = request.args.get('output_format', 'html')
+    else:
+        server_type = request.form.get('server_type')
+        config_path = request.form.get('config_path')
+        output_format = request.form.get('output_format', 'html')
     
     if not server_type:
         flash('Необходимо выбрать тип сервера', 'error')
@@ -40,9 +48,38 @@ def scan():
     
     vulnerabilities = scanner.scan()
     
+    # Add title attribute to each vulnerability for template rendering
+    for vuln in vulnerabilities:
+        vuln.title = vuln.name
+    
+    scan_id = str(uuid.uuid4())
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    high_count = len([v for v in vulnerabilities if v.severity == 'HIGH'])
+    medium_count = len([v for v in vulnerabilities if v.severity == 'MEDIUM'])
+    low_count = len([v for v in vulnerabilities if v.severity == 'LOW'])
+    
+    scan_record = {
+        'id': scan_id,
+        'timestamp': timestamp,
+        'datetime': datetime.now(),
+        'server_type': server_type,
+        'config_path': config_path or "По умолчанию",
+        'vulnerabilities': vulnerabilities,
+        'count': len(vulnerabilities),
+        'high_count': high_count,
+        'medium_count': medium_count,
+        'low_count': low_count
+    }
+    
+    app.config['SCAN_HISTORY'].insert(0, scan_record)
+    if len(app.config['SCAN_HISTORY']) > app.config['MAX_HISTORY_SIZE']:
+        app.config['SCAN_HISTORY'].pop()
+    
+    session['last_scan_id'] = scan_id
+    
     if output_format == 'json':
         # Create JSON response
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"vulnerability_report_{timestamp}.json"
         report_path = os.path.join(os.getcwd(), "reports", filename)
         
@@ -56,7 +93,6 @@ def scan():
     
     elif output_format == 'html':
         # Create HTML response for displaying in browser
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"vulnerability_report_{timestamp}.html"
         report_path = os.path.join(os.getcwd(), "reports", filename)
         
@@ -71,7 +107,13 @@ def scan():
                               count=len(vulnerabilities),
                               server_type=server_type,
                               config_path=config_path or "По умолчанию",
-                              report_path=report_path)
+                              report_path=report_path,
+                              scan_id=scan_id,
+                              history=app.config['SCAN_HISTORY'],
+                              datetime=datetime,
+                              high_count=high_count,
+                              medium_count=medium_count,
+                              low_count=low_count)
     
     # Default to console output format
     return render_template('results.html', 
@@ -79,7 +121,13 @@ def scan():
                           count=len(vulnerabilities),
                           server_type=server_type,
                           config_path=config_path or "По умолчанию",
-                          report_path=None)
+                          report_path=None,
+                          scan_id=scan_id,
+                          history=app.config['SCAN_HISTORY'],
+                          datetime=datetime,
+                          high_count=high_count,
+                          medium_count=medium_count,
+                          low_count=low_count)
 
 @app.route('/download/<path:filename>')
 def download_report(filename):
@@ -88,6 +136,104 @@ def download_report(filename):
     except Exception as e:
         flash(f'Ошибка при скачивании файла: {str(e)}', 'error')
         return redirect(url_for('index'))
+
+@app.route('/download_pdf_report')
+def download_pdf_report():
+    scan_id = session.get('last_scan_id')
+    if not scan_id:
+        flash('Отчет не найден', 'error')
+        return redirect(url_for('index'))
+    
+    scan_data = None
+    for scan in app.config['SCAN_HISTORY']:
+        if scan['id'] == scan_id:
+            scan_data = scan
+            break
+    
+    if not scan_data:
+        flash('Данные сканирования не найдены', 'error')
+        return redirect(url_for('index'))
+    
+    # Add title attribute to each vulnerability for PDF report rendering
+    for vuln in scan_data['vulnerabilities']:
+        vuln.title = vuln.name
+    
+    # Create a temporary HTML file for PDF generation
+    with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp_html:
+        html_content = render_template(
+            'pdf_report.html',
+            vulnerabilities=scan_data['vulnerabilities'],
+            count=scan_data['count'],
+            server_type=scan_data['server_type'],
+            config_path=scan_data['config_path'],
+            timestamp=scan_data['timestamp'],
+            high_count=scan_data['high_count'],
+            medium_count=scan_data['medium_count'],
+            low_count=scan_data['low_count']
+        )
+        temp_html.write(html_content.encode('utf-8'))
+        temp_html_path = temp_html.name
+    
+    # Generate PDF file
+    pdf_filename = f"vulnerability_report_{scan_data['timestamp']}.pdf"
+    pdf_path = os.path.join(os.getcwd(), "reports", pdf_filename)
+    
+    # Ensure reports directory exists
+    os.makedirs(os.path.join(os.getcwd(), "reports"), exist_ok=True)
+    
+    try:
+        pdfkit.from_file(temp_html_path, pdf_path)
+        os.unlink(temp_html_path)  # Remove temporary HTML file
+        return send_file(pdf_path, as_attachment=True)
+    except Exception as e:
+        os.unlink(temp_html_path)  # Clean up even on error
+        flash(f'Ошибка при создании PDF: {str(e)}', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/history')
+def history():
+    return render_template('history.html', history=app.config['SCAN_HISTORY'], datetime=datetime)
+
+@app.route('/view_scan/<scan_id>')
+def view_scan(scan_id):
+    scan_data = None
+    for scan in app.config['SCAN_HISTORY']:
+        if scan['id'] == scan_id:
+            scan_data = scan
+            break
+    
+    if not scan_data:
+        flash('Данные сканирования не найдены', 'error')
+        return redirect(url_for('history'))
+    
+    session['last_scan_id'] = scan_id
+    
+    # Add title attribute to each vulnerability for template rendering
+    for vuln in scan_data['vulnerabilities']:
+        vuln.title = vuln.name
+    
+    return render_template('results.html',
+                          vulnerabilities=scan_data['vulnerabilities'],
+                          count=scan_data['count'],
+                          server_type=scan_data['server_type'],
+                          config_path=scan_data['config_path'],
+                          report_path=None,
+                          scan_id=scan_id,
+                          history=app.config['SCAN_HISTORY'],
+                          datetime=datetime,
+                          high_count=scan_data['high_count'],
+                          medium_count=scan_data['medium_count'],
+                          low_count=scan_data['low_count'])
+
+@app.route('/delete_scan/<scan_id>')
+def delete_scan(scan_id):
+    for i, scan in enumerate(app.config['SCAN_HISTORY']):
+        if scan['id'] == scan_id:
+            app.config['SCAN_HISTORY'].pop(i)
+            flash('Запись сканирования удалена', 'success')
+            break
+    
+    return redirect(url_for('history'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9696) 

@@ -1,0 +1,78 @@
+/*
+Use this file to override Bootstrap defaults and add custom styles
+for a modern, minimalistic, and colorful look.
+*/
+
+/* Example: Customize primary color for light/dark themes */
+[data-bs-theme="light"] {
+  --bs-primary: #4f46e5; /* Indigo */
+  --bs-primary-rgb: 79, 70, 229;
+  --bs-link-color-rgb: var(--bs-primary-rgb);
+}
+
+[data-bs-theme="dark"] {
+  --bs-primary: #818cf8; /* Lighter Indigo for dark mode */
+  --bs-primary-rgb: 129, 140, 248;
+  --bs-link-color-rgb: var(--bs-primary-rgb);
+  --bs-body-bg: #1f2937; /* Dark Gray */
+  --bs-body-color: #f3f4f6; /* Light Gray */
+  --bs-tertiary-bg: #374151; /* Medium Gray */
+  --bs-border-color: #4b5563; /* Gray */
+  --bs-card-bg: #374151; /* Medium Gray for cards */
+}
+
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 85%, black);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 80%, black);
+  --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 70%, black);
+  --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 65%, black);
+}
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card {
+  border-radius: 0.5rem;
+  border: 1px solid var(--bs-border-color);
+}
+
+.card-header {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.server-option-card,
+.output-option-card {
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+}
+
+.server-option-card:hover,
+.output-option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.server-option-card.border-primary,
+.output-option-card.border-primary {
+   box-shadow: 0 0 0 2px var(--bs-primary);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary-text-emphasis);
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: var(--bs-primary);
+}
+
+pre code {
+    white-space: pre-wrap;
+    word-break: break-all;
+} 

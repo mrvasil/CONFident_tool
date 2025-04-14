@@ -1,121 +1,242 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card">
+<div class="row justify-content-center mb-4">
+    <div class="col-lg-10">
+        <div class="card shadow-sm mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">Результаты сканирования</h2>
-                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                <h1 class="h4 mb-0 fw-bold">Результаты сканирования</h1>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left me-1"></i> Новое сканирование
                 </a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tbody>
-                                <tr>
-                                    <th scope="row" width="35%">Тип сервера:</th>
-                                    <td>{{ server_type }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Путь конфигурации:</th>
-                                    <td>{{ config_path }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Количество уязвимостей:</th>
-                                    <td>
-                                        <span class="badge bg-{{ 'danger' if count > 0 else 'success' }} rounded-pill">
-                                            {{ count }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <dl class="row">
+                            <dt class="col-sm-5 fw-medium">Тип сервера:</dt>
+                            <dd class="col-sm-7">{{ server_type | capitalize }}</dd>
+
+                            <dt class="col-sm-5 fw-medium">Путь конфигурации:</dt>
+                            <dd class="col-sm-7">{{ config_path }}</dd>
+
+                            <dt class="col-sm-5 fw-medium">Найдено уязвимостей:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge rounded-pill text-bg-{{ 'danger' if count > 0 else 'success' }}">
+                                    {{ count }}
+                                </span>
+                            </dd>
+                        </dl>
                     </div>
-                    <div class="col-md-6">
-                        <div class="d-flex justify-content-end">
+                    <div class="col-md-6 text-md-end">
+                        <div class="btn-group">
                             {% if report_path %}
-                            <a href="{{ url_for('download_report', filename=report_path) }}" class="btn btn-primary me-2">
-                                <i class="bi bi-download me-1"></i> Скачать отчет
+                            <a href="{{ url_for('download_report', filename=report_path) }}" class="btn btn-primary">
+                                <i class="bi bi-download me-1"></i> Скачать HTML
                             </a>
                             {% endif %}
+                            <a href="{{ url_for('scan', server_type=server_type, config_path=config_path, output_format='json') }}" class="btn btn-primary">
+                                <i class="bi bi-filetype-json me-1"></i> Скачать JSON
+                            </a>
+                            <a href="{{ url_for('download_pdf_report') }}" class="btn btn-primary">
+                                <i class="bi bi-filetype-pdf me-1"></i> Скачать PDF
+                            </a>
                         </div>
                     </div>
                 </div>
 
                 {% if count > 0 %}
                 <div class="row mb-3">
-                    <div class="col-md-12">
-                        <h4 class="mb-3">Обнаруженные уязвимости</h4>
-                        <div class="alert alert-warning">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Обнаружены потенциальные проблемы безопасности в конфигурации. Рекомендуется их исправить.
+                    <div class="col-md-6">
+                        <h5 class="fw-medium mb-0">Обнаруженные уязвимости:</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-md-end">
+                            <div class="btn-group" role="group" aria-label="Фильтр по уровню критичности">
+                                <button type="button" class="btn btn-sm btn-outline-secondary active" data-filter="all">Все</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-filter="HIGH">High</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning" data-filter="MEDIUM">Medium</button>
+                                <button type="button" class="btn btn-sm btn-outline-info" data-filter="LOW">Low</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {% for vuln in vulnerabilities %}
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <span class="{{ vuln.severity|lower }}">
-                                    {% if vuln.severity == 'HIGH' %}
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                    {% elif vuln.severity == 'MEDIUM' %}
-                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
-                                    {% elif vuln.severity == 'LOW' %}
-                                    <i class="bi bi-info-circle-fill me-2"></i>
-                                    {% else %}
-                                    <i class="bi bi-lightbulb-fill me-2"></i>
-                                    {% endif %}
-                                    {{ vuln.title }}
-                                </span>
-                            </h5>
-                            <span class="badge bg-{{ 'danger' if vuln.severity == 'HIGH' else 'warning' if vuln.severity == 'MEDIUM' else 'info' if vuln.severity == 'LOW' else 'secondary' }}">
-                                {{ vuln.severity }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
+                <div class="accordion vulnerability-list" id="vulnerabilitiesAccordion">
+                    {% for vuln in vulnerabilities %}
+                    <div class="accordion-item vulnerability-item" data-severity="{{ vuln.severity }}">
+                        <h2 class="accordion-header position-relative" id="heading-{{ loop.index }}">
+                            <div class="position-absolute start-0 top-0 bottom-0 d-flex align-items-center ps-2">
+                                {% if vuln.severity == 'HIGH' %}<i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                {% elif vuln.severity == 'MEDIUM' %}<i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                                {% elif vuln.severity == 'LOW' %}<i class="bi bi-info-circle-fill text-info fs-5"></i>
+                                {% else %}<i class="bi bi-lightbulb-fill text-secondary fs-5"></i>
+                                {% endif %}
+                            </div>
+                            <button class="accordion-button ps-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" aria-expanded="true" aria-controls="collapse-{{ loop.index }}">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <span class="fw-medium fs-5 me-2">{{ vuln.title }}</span>
+                                    <span class="badge rounded-pill ms-5 me-4 text-bg-{{ 'danger' if vuln.severity == 'HIGH' else 'warning' if vuln.severity == 'MEDIUM' else 'info' if vuln.severity == 'LOW' else 'secondary' }}">
+                                        {{ 'High' if vuln.severity == 'HIGH' else 'Medium' if vuln.severity == 'MEDIUM' else 'Low' if vuln.severity == 'LOW' else vuln.severity }}
+                                    </span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse show" aria-labelledby="heading-{{ loop.index }}">
+                            <div class="accordion-body">
                                 <p><strong>Описание:</strong> {{ vuln.description }}</p>
                                 {% if vuln.file_path %}
-                                <p><strong>Файл:</strong> {{ vuln.file_path }}</p>
+                                <p class="mb-1"><strong>Файл:</strong> <code class="user-select-all">{{ vuln.file_path }}</code></p>
                                 {% endif %}
                                 {% if vuln.line_number %}
-                                <p><strong>Строка:</strong> {{ vuln.line_number }}</p>
+                                <p class="mb-1"><strong>Строка:</strong> {{ vuln.line_number }}</p>
                                 {% endif %}
                                 {% if vuln.config_section %}
-                                <div class="mt-2">
+                                <div class="mt-3">
                                     <strong>Проблемный фрагмент конфигурации:</strong>
-                                    <pre class="bg-light p-3 mt-2 rounded"><code>{{ vuln.config_section }}</code></pre>
+                                    <pre class="bg-light p-3 rounded mt-2 small"><code>{{ vuln.config_section }}</code></pre>
                                 </div>
                                 {% endif %}
+                                <hr class="my-3">
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <strong>Рекомендации по исправлению:</strong>
+                                        <p class="mb-0">{{ vuln.recommendation }}</p>
+                                    </div>
+                                    <div class="col-md-3 mt-3 mt-md-0 text-end">
+                                        <button class="btn btn-outline-success copy-fix-btn" data-fix="{{ vuln.recommendation }}" title="Копировать рекомендацию">
+                                            <i class="bi bi-clipboard me-1"></i> Копировать
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-white">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <strong class="d-block mb-2">Рекомендации по исправлению:</strong>
-                                <p>{{ vuln.recommendation }}</p>
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
                 {% else %}
-                <div class="alert alert-success">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <strong>Отлично!</strong> Уязвимостей не обнаружено в текущей конфигурации.
+                <div class="alert alert-success d-flex align-items-center" role="alert">
+                    <i class="bi bi-check-circle-fill me-2 flex-shrink-0"></i>
+                    <div>
+                        <strong class="fw-semibold">Отлично!</strong> Уязвимостей не обнаружено в текущей конфигурации.
+                    </div>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<div class="row justify-content-center mb-4">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h2 class="h5 mb-0 fw-bold">История сканирований</h2>
+            </div>
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Тип сервера</th>
+                                <th>Путь конфигурации</th>
+                                <th>Уязвимости</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ datetime.now().strftime("%d.%m.%Y %H:%M") }}</td>
+                                <td>{{ server_type | capitalize }}</td>
+                                <td>{{ config_path }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge rounded-pill bg-danger me-1">{{ high_count }}</span>
+                                        <span class="badge rounded-pill bg-warning me-1">{{ medium_count }}</span>
+                                        <span class="badge rounded-pill bg-info">{{ low_count }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary"><i class="bi bi-eye"></i></a>
+                                        <a href="#" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Severity filter functionality
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        const vulnerabilityItems = document.querySelectorAll('.vulnerability-item');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const filterValue = this.getAttribute('data-filter');
+                
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Filter vulnerabilities
+                vulnerabilityItems.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-severity') === filterValue) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Sort vulnerabilities by severity on page load
+        const sortBySeverity = () => {
+            const accordionContainer = document.getElementById('vulnerabilitiesAccordion');
+            const items = Array.from(accordionContainer.querySelectorAll('.vulnerability-item'));
+            
+            // Sort by severity (HIGH > MEDIUM > LOW)
+            items.sort((a, b) => {
+                const severityA = a.getAttribute('data-severity');
+                const severityB = b.getAttribute('data-severity');
+                
+                const severityOrder = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+                return severityOrder[severityB] - severityOrder[severityA];
+            });
+            
+            // Reappend in sorted order
+            items.forEach(item => {
+                accordionContainer.appendChild(item);
+            });
+        };
+        
+        // Call sort function on page load
+        sortBySeverity();
+        
+        // Copy recommendation functionality
+        const copyButtons = document.querySelectorAll('.copy-fix-btn');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const fixText = this.getAttribute('data-fix');
+                navigator.clipboard.writeText(fixText).then(() => {
+                    // Change button text temporarily
+                    const originalHtml = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check-lg me-1"></i> Скопировано';
+                    setTimeout(() => {
+                        this.innerHTML = originalHtml;
+                    }, 2000);
+                });
+            });
+        });
+    });
+</script>
 {% endblock %} 

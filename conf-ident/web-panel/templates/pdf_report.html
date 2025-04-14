@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Отчет о сканировании уязвимостей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4f46e5;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 5px;
+        }
+        .summary {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .summary-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .summary-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .summary-label {
+            flex: 0 0 200px;
+            font-weight: bold;
+        }
+        .summary-value {
+            flex: 1;
+        }
+        .stats {
+            display: flex;
+            margin: 20px 0;
+            justify-content: space-between;
+        }
+        .stat-box {
+            flex: 0 0 22%;
+            text-align: center;
+            padding: 15px 10px;
+            border-radius: 5px;
+        }
+        .stat-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .severity-high {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        .severity-medium {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+        .severity-low {
+            background-color: #cff4fc;
+            color: #055160;
+        }
+        .severity-total {
+            background-color: #e2e3e5;
+            color: #41464b;
+        }
+        .vulnerability {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .vulnerability.HIGH {
+            border-left: 5px solid #dc3545;
+        }
+        .vulnerability.MEDIUM {
+            border-left: 5px solid #ffc107;
+        }
+        .vulnerability.LOW {
+            border-left: 5px solid #0dcaf0;
+        }
+        .vulnerability-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .severity-badge {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: white;
+        }
+        .badge-HIGH {
+            background-color: #dc3545;
+        }
+        .badge-MEDIUM {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .badge-LOW {
+            background-color: #0dcaf0;
+        }
+        .section {
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border-radius: 3px;
+            margin-top: 5px;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">CONFident</div>
+        <div>Отчет о сканировании уязвимостей веб-сервера</div>
+        <div style="margin-top: 5px; font-size: 12px;">Дата создания: {{ timestamp }}</div>
+    </div>
+
+    <div class="summary">
+        <div class="summary-title">Общая информация</div>
+        <div class="summary-row">
+            <div class="summary-label">Тип сервера:</div>
+            <div class="summary-value">{{ server_type | capitalize }}</div>
+        </div>
+        <div class="summary-row">
+            <div class="summary-label">Путь конфигурации:</div>
+            <div class="summary-value">{{ config_path }}</div>
+        </div>
+        <div class="summary-row">
+            <div class="summary-label">Всего уязвимостей:</div>
+            <div class="summary-value">{{ count }}</div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box severity-high">
+            <div class="stat-title">High</div>
+            <div class="stat-value">{{ high_count }}</div>
+        </div>
+        <div class="stat-box severity-medium">
+            <div class="stat-title">Medium</div>
+            <div class="stat-value">{{ medium_count }}</div>
+        </div>
+        <div class="stat-box severity-low">
+            <div class="stat-title">Low</div>
+            <div class="stat-value">{{ low_count }}</div>
+        </div>
+        <div class="stat-box severity-total">
+            <div class="stat-title">Всего</div>
+            <div class="stat-value">{{ count }}</div>
+        </div>
+    </div>
+
+    <h2>Найденные уязвимости</h2>
+
+    {% if count == 0 %}
+    <div style="text-align: center; padding: 20px; background-color: #d1e7dd; color: #0f5132; border-radius: 5px;">
+        Уязвимости не обнаружены
+    </div>
+    {% else %}
+        {% for vuln in vulnerabilities %}
+        <div class="vulnerability {{ vuln.severity }}">
+            <div class="vulnerability-title">
+                {{ vuln.title }}
+                <span class="severity-badge badge-{{ vuln.severity }}">
+                    {{ 'High' if vuln.severity == 'HIGH' else 'Medium' if vuln.severity == 'MEDIUM' else 'Low' if vuln.severity == 'LOW' else vuln.severity }}
+                </span>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Описание:</div>
+                <div>{{ vuln.description }}</div>
+            </div>
+
+            {% if vuln.file_path %}
+            <div class="section">
+                <div class="section-title">Файл:</div>
+                <div>{{ vuln.file_path }}</div>
+            </div>
+            {% endif %}
+
+            {% if vuln.line_number %}
+            <div class="section">
+                <div class="section-title">Строка:</div>
+                <div>{{ vuln.line_number }}</div>
+            </div>
+            {% endif %}
+
+            {% if vuln.config_section %}
+            <div class="section">
+                <div class="section-title">Проблемный фрагмент конфигурации:</div>
+                <div class="code-block">{{ vuln.config_section }}</div>
+            </div>
+            {% endif %}
+
+            <div class="section">
+                <div class="section-title">Рекомендации по исправлению:</div>
+                <div>{{ vuln.recommendation }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="footer">
+        <p>Отчет создан автоматически с помощью CONFident - Сканер уязвимостей веб-серверов</p>
+        <p>© 2024 CONFident</p>
+    </div>
+</body>
+</html> 

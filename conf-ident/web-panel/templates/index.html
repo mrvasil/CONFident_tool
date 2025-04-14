@@ -2,114 +2,91 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
             <div class="card-header">
-                <h2 class="text-center mb-0">Сканер уязвимостей веб-серверов</h2>
+                <h1 class="h4 mb-0 text-center fw-bold">Сканер уязвимостей веб-серверов</h1>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form action="{{ url_for('scan') }}" method="post">
+
                     <div class="mb-4">
-                        <h5>Выберите тип веб-сервера:</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card p-3 mb-3 server-option">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="server_type" id="nginx" value="nginx" required>
-                                        <label class="form-check-label w-100" for="nginx">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-shrink-0">
-                                                    <i class="bi bi-hdd-rack text-primary fs-1"></i>
-                                                </div>
-                                                <div class="flex-grow-1 ms-3">
-                                                    <h5 class="mb-1">Nginx</h5>
-                                                    <p class="mb-0 text-muted">Высокопроизводительный веб-сервер и обратный прокси-сервер</p>
-                                                </div>
-                                            </div>
-                                        </label>
+                        <h5 class="mb-3 fw-medium">1. Выберите тип веб-сервера:</h5>
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            <div class="col">
+                                <label class="card h-100 server-option-card">
+                                    <div class="card-body d-flex align-items-center">
+                                        <input class="form-check-input me-3" type="radio" name="server_type" id="nginx" value="nginx" required>
+                                        <i class="bi bi-hdd-rack-fill fs-1 text-primary me-3"></i>
+                                        <div>
+                                            <h6 class="card-title mb-1 fw-semibold">Nginx</h6>
+                                            <p class="card-text small text-body-secondary mb-0">Высокопроизводительный веб-сервер и обратный прокси.</p>
+                                        </div>
                                     </div>
-                                </div>
+                                </label>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card p-3 mb-3 server-option">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="server_type" id="apache" value="apache" required>
-                                        <label class="form-check-label w-100" for="apache">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-shrink-0">
-                                                    <i class="bi bi-server text-primary fs-1"></i>
-                                                </div>
-                                                <div class="flex-grow-1 ms-3">
-                                                    <h5 class="mb-1">Apache</h5>
-                                                    <p class="mb-0 text-muted">Популярный HTTP-сервер с открытым исходным кодом</p>
-                                                </div>
-                                            </div>
-                                        </label>
+                            <div class="col">
+                                <label class="card h-100 server-option-card">
+                                    <div class="card-body d-flex align-items-center">
+                                        <input class="form-check-input me-3" type="radio" name="server_type" id="apache" value="apache" required>
+                                        <i class="bi bi-server fs-1 text-primary me-3"></i>
+                                        <div>
+                                            <h6 class="card-title mb-1 fw-semibold">Apache</h6>
+                                            <p class="card-text small text-body-secondary mb-0">Популярный HTTP-сервер с открытым исходным кодом.</p>
+                                        </div>
                                     </div>
-                                </div>
+                                </label>
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label for="config_path" class="form-label">Путь к конфигурационным файлам (опционально):</label>
+                        <label for="config_path" class="form-label fw-medium">2. Укажите путь к конфигурационным файлам (опционально):</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-folder"></i></span>
+                            <span class="input-group-text"><i class="bi bi-folder2-open"></i></span>
                             <input type="text" class="form-control" id="config_path" name="config_path" placeholder="Оставьте пустым для использования пути по умолчанию">
                         </div>
                         <div class="form-text">Если путь не указан, будут использованы стандартные пути для выбранного сервера.</div>
                     </div>
 
                     <div class="mb-4">
-                        <h5>Формат вывода результатов:</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="card p-3 output-option">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="output_format" id="html" value="html" checked>
-                                        <label class="form-check-label w-100" for="html">
-                                            <div class="text-center">
-                                                <i class="bi bi-filetype-html fs-1 mb-2 text-primary"></i>
-                                                <h6>HTML</h6>
-                                                <small class="text-muted">Отображение в браузере</small>
-                                            </div>
-                                        </label>
+                        <h5 class="mb-3 fw-medium">3. Выберите формат вывода результатов:</h5>
+                        <div class="row row-cols-1 row-cols-md-3 g-3">
+                            <div class="col">
+                                <label class="card h-100 output-option-card text-center">
+                                    <div class="card-body">
+                                        <input class="form-check-input position-absolute top-0 end-0 mt-2 me-2" type="radio" name="output_format" id="html" value="html" checked>
+                                        <i class="bi bi-filetype-html fs-1 mb-2 text-primary"></i>
+                                        <h6 class="card-title mb-1 fw-semibold">HTML</h6>
+                                        <p class="card-text small text-body-secondary mb-0">Отображение в браузере</p>
                                     </div>
-                                </div>
+                                </label>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card p-3 output-option">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="output_format" id="json" value="json">
-                                        <label class="form-check-label w-100" for="json">
-                                            <div class="text-center">
-                                                <i class="bi bi-filetype-json fs-1 mb-2 text-primary"></i>
-                                                <h6>JSON</h6>
-                                                <small class="text-muted">Скачать файл JSON</small>
-                                            </div>
-                                        </label>
+                            <div class="col">
+                                <label class="card h-100 output-option-card text-center">
+                                    <div class="card-body">
+                                        <input class="form-check-input position-absolute top-0 end-0 mt-2 me-2" type="radio" name="output_format" id="json" value="json">
+                                        <i class="bi bi-filetype-json fs-1 mb-2 text-primary"></i>
+                                        <h6 class="card-title mb-1 fw-semibold">JSON</h6>
+                                        <p class="card-text small text-body-secondary mb-0">Скачать файл JSON</p>
                                     </div>
-                                </div>
+                                </label>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card p-3 output-option">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="output_format" id="console" value="console">
-                                        <label class="form-check-label w-100" for="console">
-                                            <div class="text-center">
-                                                <i class="bi bi-terminal fs-1 mb-2 text-primary"></i>
-                                                <h6>Консоль</h6>
-                                                <small class="text-muted">Только отображение</small>
-                                            </div>
-                                        </label>
+                            <div class="col">
+                                <label class="card h-100 output-option-card text-center">
+                                    <div class="card-body">
+                                        <input class="form-check-input position-absolute top-0 end-0 mt-2 me-2" type="radio" name="output_format" id="console" value="console">
+                                        <i class="bi bi-terminal fs-1 mb-2 text-primary"></i>
+                                        <h6 class="card-title mb-1 fw-semibold">Консоль</h6>
+                                        <p class="card-text small text-body-secondary mb-0">Только отображение (без скачивания)</p>
                                     </div>
-                                </div>
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <div class="d-grid mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg">
                             <i class="bi bi-shield-fill-check me-2"></i> Запустить сканирование
                         </button>
                     </div>
@@ -123,21 +100,25 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const serverOptions = document.querySelectorAll('.server-option');
-        serverOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const radioInput = this.querySelector('input[type="radio"]');
-                radioInput.checked = true;
+        function setupRadioCards(cardSelector) {
+            const cards = document.querySelectorAll(cardSelector);
+            cards.forEach(card => {
+                const radio = card.querySelector('input[type="radio"]');
+                if (radio.checked) {
+                    card.classList.add('border-primary', 'border-2');
+                }
+                card.addEventListener('click', function() {
+                    cards.forEach(c => c.classList.remove('border-primary', 'border-2'));
+                    this.classList.add('border-primary', 'border-2');
+                    radio.checked = true;
+                    // Trigger change event if needed for other JS logic
+                    radio.dispatchEvent(new Event('change'));
+                });
             });
-        });
+        }
 
-        const outputOptions = document.querySelectorAll('.output-option');
-        outputOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const radioInput = this.querySelector('input[type="radio"]');
-                radioInput.checked = true;
-            });
-        });
+        setupRadioCards('.server-option-card');
+        setupRadioCards('.output-option-card');
     });
 </script>
 {% endblock %} 
