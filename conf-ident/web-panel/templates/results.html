@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Результаты сканирования</h2>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-1"></i> Новое сканирование
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th scope="row" width="35%">Тип сервера:</th>
+                                    <td>{{ server_type }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Путь конфигурации:</th>
+                                    <td>{{ config_path }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Количество уязвимостей:</th>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if count > 0 else 'success' }} rounded-pill">
+                                            {{ count }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-end">
+                            {% if report_path %}
+                            <a href="{{ url_for('download_report', filename=report_path) }}" class="btn btn-primary me-2">
+                                <i class="bi bi-download me-1"></i> Скачать отчет
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if count > 0 %}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h4 class="mb-3">Обнаруженные уязвимости</h4>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Обнаружены потенциальные проблемы безопасности в конфигурации. Рекомендуется их исправить.
+                        </div>
+                    </div>
+                </div>
+
+                {% for vuln in vulnerabilities %}
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <span class="{{ vuln.severity|lower }}">
+                                    {% if vuln.severity == 'HIGH' %}
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    {% elif vuln.severity == 'MEDIUM' %}
+                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                    {% elif vuln.severity == 'LOW' %}
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    {% else %}
+                                    <i class="bi bi-lightbulb-fill me-2"></i>
+                                    {% endif %}
+                                    {{ vuln.title }}
+                                </span>
+                            </h5>
+                            <span class="badge bg-{{ 'danger' if vuln.severity == 'HIGH' else 'warning' if vuln.severity == 'MEDIUM' else 'info' if vuln.severity == 'LOW' else 'secondary' }}">
+                                {{ vuln.severity }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p><strong>Описание:</strong> {{ vuln.description }}</p>
+                                {% if vuln.file_path %}
+                                <p><strong>Файл:</strong> {{ vuln.file_path }}</p>
+                                {% endif %}
+                                {% if vuln.line_number %}
+                                <p><strong>Строка:</strong> {{ vuln.line_number }}</p>
+                                {% endif %}
+                                {% if vuln.config_section %}
+                                <div class="mt-2">
+                                    <strong>Проблемный фрагмент конфигурации:</strong>
+                                    <pre class="bg-light p-3 mt-2 rounded"><code>{{ vuln.config_section }}</code></pre>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <strong class="d-block mb-2">Рекомендации по исправлению:</strong>
+                                <p>{{ vuln.recommendation }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <strong>Отлично!</strong> Уязвимостей не обнаружено в текущей конфигурации.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
