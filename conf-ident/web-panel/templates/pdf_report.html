@@ -197,7 +197,7 @@
             <div class="vulnerability-title">
                 {{ vuln.title }}
                 <span class="severity-badge badge-{{ vuln.severity }}">
-                    {{ 'High' if vuln.severity == 'HIGH' else 'Medium' if vuln.severity == 'MEDIUM' else 'Low' if vuln.severity == 'LOW' else vuln.severity }}
+                    {{ 'High' if vuln.severity == 'high' else 'Medium' if vuln.severity == 'medium' else 'Low' if vuln.severity == 'low' else vuln.severity }}
                 </span>
             </div>
             

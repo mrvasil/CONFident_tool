@@ -54,9 +54,9 @@
                         <div class="d-flex justify-content-md-end">
                             <div class="btn-group" role="group" aria-label="Фильтр по уровню критичности">
                                 <button type="button" class="btn btn-sm btn-outline-secondary active" data-filter="all">Все</button>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-filter="HIGH">High</button>
-                                <button type="button" class="btn btn-sm btn-outline-warning" data-filter="MEDIUM">Medium</button>
-                                <button type="button" class="btn btn-sm btn-outline-info" data-filter="LOW">Low</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-filter="high">High</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning" data-filter="medium">Medium</button>
+                                <button type="button" class="btn btn-sm btn-outline-info" data-filter="low">Low</button>
                             </div>
                         </div>
                     </div>
@@ -67,17 +67,17 @@
                     <div class="accordion-item vulnerability-item" data-severity="{{ vuln.severity }}">
                         <h2 class="accordion-header position-relative" id="heading-{{ loop.index }}">
                             <div class="position-absolute start-0 top-0 bottom-0 d-flex align-items-center ps-2">
-                                {% if vuln.severity == 'HIGH' %}<i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
-                                {% elif vuln.severity == 'MEDIUM' %}<i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
-                                {% elif vuln.severity == 'LOW' %}<i class="bi bi-info-circle-fill text-info fs-5"></i>
+                                {% if vuln.severity == 'high' %}<i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                {% elif vuln.severity == 'medium' %}<i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                                {% elif vuln.severity == 'low' %}<i class="bi bi-info-circle-fill text-info fs-5"></i>
                                 {% else %}<i class="bi bi-lightbulb-fill text-secondary fs-5"></i>
                                 {% endif %}
                             </div>
                             <button class="accordion-button ps-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" aria-expanded="true" aria-controls="collapse-{{ loop.index }}">
                                 <div class="d-flex w-100 justify-content-between align-items-center">
                                     <span class="fw-medium fs-5 me-2">{{ vuln.title }}</span>
-                                    <span class="badge rounded-pill ms-5 me-4 text-bg-{{ 'danger' if vuln.severity == 'HIGH' else 'warning' if vuln.severity == 'MEDIUM' else 'info' if vuln.severity == 'LOW' else 'secondary' }}">
-                                        {{ 'High' if vuln.severity == 'HIGH' else 'Medium' if vuln.severity == 'MEDIUM' else 'Low' if vuln.severity == 'LOW' else vuln.severity }}
+                                    <span class="badge rounded-pill ms-5 me-4 text-bg-{{ 'danger' if vuln.severity == 'high' else 'warning' if vuln.severity == 'medium' else 'info' if vuln.severity == 'low' else 'secondary' }}">
+                                        {{ 'High' if vuln.severity == 'high' else 'Medium' if vuln.severity == 'medium' else 'Low' if vuln.severity == 'low' else vuln.severity }}
                                     </span>
                                 </div>
                             </button>
@@ -176,19 +176,14 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Severity filter functionality
         const filterButtons = document.querySelectorAll('[data-filter]');
         const vulnerabilityItems = document.querySelectorAll('.vulnerability-item');
         
         filterButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const filterValue = this.getAttribute('data-filter');
-                
-                // Update active button
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
-                
-                // Filter vulnerabilities
                 vulnerabilityItems.forEach(item => {
                     if (filterValue === 'all' || item.getAttribute('data-severity') === filterValue) {
                         item.style.display = '';
@@ -209,26 +204,22 @@
                 const severityA = a.getAttribute('data-severity');
                 const severityB = b.getAttribute('data-severity');
                 
-                const severityOrder = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+                const severityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
                 return severityOrder[severityB] - severityOrder[severityA];
             });
             
-            // Reappend in sorted order
             items.forEach(item => {
                 accordionContainer.appendChild(item);
             });
         };
         
-        // Call sort function on page load
         sortBySeverity();
         
-        // Copy recommendation functionality
         const copyButtons = document.querySelectorAll('.copy-fix-btn');
         copyButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const fixText = this.getAttribute('data-fix');
                 navigator.clipboard.writeText(fixText).then(() => {
-                    // Change button text temporarily
                     const originalHtml = this.innerHTML;
                     this.innerHTML = '<i class="bi bi-check-lg me-1"></i> Скопировано';
                     setTimeout(() => {

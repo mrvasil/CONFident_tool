@@ -55,9 +55,9 @@ def scan():
     scan_id = str(uuid.uuid4())
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    high_count = len([v for v in vulnerabilities if v.severity == 'HIGH'])
-    medium_count = len([v for v in vulnerabilities if v.severity == 'MEDIUM'])
-    low_count = len([v for v in vulnerabilities if v.severity == 'LOW'])
+    high_count = len([v for v in vulnerabilities if v.severity == 'high'])
+    medium_count = len([v for v in vulnerabilities if v.severity == 'medium'])
+    low_count = len([v for v in vulnerabilities if v.severity == 'low'])
     
     scan_record = {
         'id': scan_id,

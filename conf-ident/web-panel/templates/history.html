@@ -31,7 +31,7 @@
                                 <td>{{ scan.config_path }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <span class="badge bg-danger me-1" title="hight">{{ scan.high_count }}</span>
+                                        <span class="badge bg-danger me-1" title="high">{{ scan.high_count }}</span>
                                         <span class="badge bg-warning me-1" title="medium">{{ scan.medium_count }}</span>
                                         <span class="badge bg-info" title="low">{{ scan.low_count }}</span>
                                     </div>
@@ -104,7 +104,7 @@
                     <div class="col-md-4">
                         <div class="card bg-danger text-white">
                             <div class="card-body text-center">
-                                <h5 class="card-title">hight</h5>
+                                <h5 class="card-title">high</h5>
                                 {% set total_high = 0 %}
                                 {% for scan in history %}
                                     {% set total_high = total_high + scan.high_count %}
