@@ -45,10 +45,15 @@ def main():
     
     vulnerabilities = scanner.scan()
     
-    report = ReportGenerator(vulnerabilities, output_format=args.output)
+    report = ReportGenerator(
+        vulnerabilities, 
+        scanned_configs_count=scanner.scanned_files_count,
+        output_format=args.output
+    )
     report.generate()
     
     print(f"\nСканирование завершено. Найдено уязвимостей: {len(vulnerabilities)}")
+    print(f"Просканировано конфигураций: {scanner.scanned_files_count}")
     
     return 1 if vulnerabilities else 0
 

@@ -20,6 +20,13 @@
                             <dt class="col-sm-5 fw-medium">Путь конфигурации:</dt>
                             <dd class="col-sm-7">{{ config_path }}</dd>
 
+                            <dt class="col-sm-5 fw-medium">Отсканировано конфигураций:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge rounded-pill text-bg-primary">
+                                    {{ scanned_configs_count }}
+                                </span>
+                            </dd>
+
                             <dt class="col-sm-5 fw-medium">Найдено уязвимостей:</dt>
                             <dd class="col-sm-7">
                                 <span class="badge rounded-pill text-bg-{{ 'danger' if count > 0 else 'success' }}">

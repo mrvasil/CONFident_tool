@@ -69,7 +69,8 @@ def scan():
         'count': len(vulnerabilities),
         'high_count': high_count,
         'medium_count': medium_count,
-        'low_count': low_count
+        'low_count': low_count,
+        'scanned_configs_count': scanner.scanned_files_count
     }
     
     app.config['SCAN_HISTORY'].insert(0, scan_record)
@@ -113,7 +114,8 @@ def scan():
                               datetime=datetime,
                               high_count=high_count,
                               medium_count=medium_count,
-                              low_count=low_count)
+                              low_count=low_count,
+                              scanned_configs_count=scanner.scanned_files_count)
     
     # Default to console output format
     return render_template('results.html', 
@@ -127,7 +129,8 @@ def scan():
                           datetime=datetime,
                           high_count=high_count,
                           medium_count=medium_count,
-                          low_count=low_count)
+                          low_count=low_count,
+                          scanned_configs_count=scanner.scanned_files_count)
 
 @app.route('/download/<path:filename>')
 def download_report(filename):
@@ -169,7 +172,8 @@ def download_pdf_report():
             timestamp=scan_data['timestamp'],
             high_count=scan_data['high_count'],
             medium_count=scan_data['medium_count'],
-            low_count=scan_data['low_count']
+            low_count=scan_data['low_count'],
+            scanned_configs_count=scan_data.get('scanned_configs_count', 0)
         )
         temp_html.write(html_content.encode('utf-8'))
         temp_html_path = temp_html.name
@@ -232,7 +236,8 @@ def view_scan(scan_id):
                           datetime=datetime,
                           high_count=scan_data['high_count'],
                           medium_count=scan_data['medium_count'],
-                          low_count=scan_data['low_count'])
+                          low_count=scan_data['low_count'],
+                          scanned_configs_count=scan_data.get('scanned_configs_count', 0))
 
 @app.route('/delete_scan/<scan_id>')
 def delete_scan(scan_id):

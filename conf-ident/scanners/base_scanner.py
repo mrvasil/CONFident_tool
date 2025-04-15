@@ -5,6 +5,7 @@ class BaseScanner(ABC):
     def __init__(self, config_path=None):
         self.config_path = config_path
         self.vulnerabilities = []
+        self.scanned_files_count = 0
     
     @abstractmethod
     def find_config_files(self):
@@ -20,6 +21,7 @@ class BaseScanner(ABC):
     
     def scan(self):
         config_files = self.find_config_files()
+        self.scanned_files_count = len(config_files)
         
         for config_file in config_files:
             config_data = self.parse_config(config_file)
