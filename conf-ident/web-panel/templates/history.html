@@ -105,10 +105,6 @@
                         <div class="card bg-danger text-white">
                             <div class="card-body text-center">
                                 <h5 class="card-title">high</h5>
-                                {% set total_high = 0 %}
-                                {% for scan in history %}
-                                    {% set total_high = total_high + scan.high_count %}
-                                {% endfor %}
                                 <p class="display-5 mb-0">{{ total_high }}</p>
                             </div>
                         </div>
@@ -117,10 +113,6 @@
                         <div class="card bg-warning">
                             <div class="card-body text-center">
                                 <h5 class="card-title">medium</h5>
-                                {% set total_medium = 0 %}
-                                {% for scan in history %}
-                                    {% set total_medium = total_medium + scan.medium_count %}
-                                {% endfor %}
                                 <p class="display-5 mb-0">{{ total_medium }}</p>
                             </div>
                         </div>
@@ -129,10 +121,6 @@
                         <div class="card bg-info text-white">
                             <div class="card-body text-center">
                                 <h5 class="card-title">low</h5>
-                                {% set total_low = 0 %}
-                                {% for scan in history %}
-                                    {% set total_low = total_low + scan.low_count %}
-                                {% endfor %}
                                 <p class="display-5 mb-0">{{ total_low }}</p>
                             </div>
                         </div>

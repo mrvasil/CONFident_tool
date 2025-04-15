@@ -192,7 +192,16 @@ def download_pdf_report():
 
 @app.route('/history')
 def history():
-    return render_template('history.html', history=app.config['SCAN_HISTORY'], datetime=datetime)
+    total_high = sum(scan['high_count'] for scan in app.config['SCAN_HISTORY'])
+    total_medium = sum(scan['medium_count'] for scan in app.config['SCAN_HISTORY'])
+    total_low = sum(scan['low_count'] for scan in app.config['SCAN_HISTORY'])
+    
+    return render_template('history.html', 
+                           history=app.config['SCAN_HISTORY'], 
+                           datetime=datetime,
+                           total_high=total_high,
+                           total_medium=total_medium,
+                           total_low=total_low)
 
 @app.route('/view_scan/<scan_id>')
 def view_scan(scan_id):
