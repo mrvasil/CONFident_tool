@@ -48,7 +48,15 @@ def scan():
     
     vulnerabilities = scanner.scan()
     
-    # Add title attribute to each vulnerability for template rendering
+    vulnerable_files = set()
+    for vuln in vulnerabilities:
+        if hasattr(vuln, 'file_path') and vuln.file_path:
+            vulnerable_files.add(vuln.file_path)
+    
+    safe_files = scanner.scanned_files - vulnerable_files
+    safe_files_list = [os.path.basename(f) for f in safe_files]
+    safe_files_count = len(safe_files)
+   
     for vuln in vulnerabilities:
         vuln.title = vuln.name
         if hasattr(vuln, 'file_path') and vuln.file_path:
@@ -83,11 +91,9 @@ def scan():
     session['last_scan_id'] = scan_id
     
     if output_format == 'json':
-        # Create JSON response
         filename = f"vulnerability_report_{timestamp}.json"
         report_path = os.path.join(os.getcwd(), "reports", filename)
         
-        # Ensure reports directory exists
         os.makedirs(os.path.join(os.getcwd(), "reports"), exist_ok=True)
         
         report = ReportGenerator(vulnerabilities, output_format='json')
@@ -96,11 +102,9 @@ def scan():
         return send_file(report_path, as_attachment=True)
     
     elif output_format == 'html':
-        # Create HTML response for displaying in browser
         filename = f"vulnerability_report_{timestamp}.html"
         report_path = os.path.join(os.getcwd(), "reports", filename)
         
-        # Ensure reports directory exists
         os.makedirs(os.path.join(os.getcwd(), "reports"), exist_ok=True)
         
         report = ReportGenerator(vulnerabilities, output_format='html')
@@ -118,9 +122,10 @@ def scan():
                               high_count=high_count,
                               medium_count=medium_count,
                               low_count=low_count,
-                              scanned_configs_count=scanner.scanned_files_count)
+                              scanned_configs_count=scanner.scanned_files_count,
+                              safe_files=safe_files_list,
+                              safe_files_count=safe_files_count)
     
-    # Default to console output format
     return render_template('results.html', 
                           vulnerabilities=vulnerabilities, 
                           count=len(vulnerabilities),
@@ -160,11 +165,9 @@ def download_pdf_report():
         flash('Данные сканирования не найдены', 'error')
         return redirect(url_for('index'))
     
-    # Add title attribute to each vulnerability for PDF report rendering
     for vuln in scan_data['vulnerabilities']:
         vuln.title = vuln.name
     
-    # Create a temporary HTML file for PDF generation
     with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp_html:
         html_content = render_template(
             'pdf_report.html',
@@ -181,11 +184,9 @@ def download_pdf_report():
         temp_html.write(html_content.encode('utf-8'))
         temp_html_path = temp_html.name
     
-    # Generate PDF file
     pdf_filename = f"vulnerability_report_{scan_data['timestamp']}.pdf"
     pdf_path = os.path.join(os.getcwd(), "reports", pdf_filename)
     
-    # Ensure reports directory exists
     os.makedirs(os.path.join(os.getcwd(), "reports"), exist_ok=True)
     
     try:
@@ -224,7 +225,6 @@ def view_scan(scan_id):
     
     session['last_scan_id'] = scan_id
     
-    # Add title attribute to each vulnerability for template rendering
     for vuln in scan_data['vulnerabilities']:
         vuln.title = vuln.name
     

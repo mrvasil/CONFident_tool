@@ -27,6 +27,27 @@
                                 </span>
                             </dd>
 
+                            <dt class="col-sm-5 fw-medium">Безопасные конфигурации:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge rounded-pill text-bg-success">
+                                    {{ safe_files_count }}
+                                </span>
+                                {% if safe_files %}
+                                <button class="btn btn-link btn-sm p-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#safeFilesList">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                                <div class="collapse mt-2" id="safeFilesList">
+                                    <div class="card card-body p-2">
+                                        <small>
+                                            {% for file in safe_files %}
+                                            <div><i class="bi bi-check-circle-fill text-success me-1"></i>{{ file }}</div>
+                                            {% endfor %}
+                                        </small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </dd>
+
                             <dt class="col-sm-5 fw-medium">Найдено уязвимостей:</dt>
                             <dd class="col-sm-7">
                                 <span class="badge rounded-pill text-bg-{{ 'danger' if count > 0 else 'success' }}">
