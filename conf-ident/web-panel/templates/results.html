@@ -82,7 +82,13 @@
                             </div>
                             <button class="accordion-button ps-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" aria-expanded="true" aria-controls="collapse-{{ loop.index }}">
                                 <div class="d-flex w-100 justify-content-between align-items-center">
-                                    <span class="fw-medium fs-5 me-2">{{ vuln.title }}</span>
+                                    <div>
+                                        <span class="fw-medium fs-5 me-2">{{ vuln.title }}</span>
+                                        {% if vuln.file_path %}
+                                        <br>
+                                        <small class="text-muted"><i class="bi bi-file-text me-1"></i>{{ vuln.display_file_path }}</small>
+                                        {% endif %}
+                                    </div>
                                     <span class="badge rounded-pill ms-5 me-4 text-bg-{{ 'danger' if vuln.severity == 'high' else 'warning' if vuln.severity == 'medium' else 'info' if vuln.severity == 'low' else 'secondary' }}">
                                         {{ 'High' if vuln.severity == 'high' else 'Medium' if vuln.severity == 'medium' else 'Low' if vuln.severity == 'low' else vuln.severity }}
                                     </span>
@@ -92,9 +98,6 @@
                         <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse show" aria-labelledby="heading-{{ loop.index }}">
                             <div class="accordion-body">
                                 <p><strong>Описание:</strong> {{ vuln.description }}</p>
-                                {% if vuln.file_path %}
-                                <p class="mb-1"><strong>Файл:</strong> <code class="user-select-all">{{ vuln.file_path }}</code></p>
-                                {% endif %}
                                 {% if vuln.line_number %}
                                 <p class="mb-1"><strong>Строка:</strong> {{ vuln.line_number }}</p>
                                 {% endif %}

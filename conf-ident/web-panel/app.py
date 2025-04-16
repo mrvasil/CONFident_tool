@@ -51,6 +51,9 @@ def scan():
     # Add title attribute to each vulnerability for template rendering
     for vuln in vulnerabilities:
         vuln.title = vuln.name
+        if hasattr(vuln, 'file_path') and vuln.file_path:
+            vuln.display_file_path = os.path.basename(vuln.file_path)
+            vuln.file_path = os.path.abspath(vuln.file_path)
     
     scan_id = str(uuid.uuid4())
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
