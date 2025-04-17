@@ -1,12 +1,12 @@
 from vulnerabilities.base_vulnerability import Vulnerability
-#examples
+
 class DirectoryListingVulnerability(Vulnerability):
     def __init__(self):
         super().__init__(
             name="Directory Listing Enabled",
             severity="medium",
-            description="Directory listing is enabled, which allows attackers to view the contents of directories on your server.",
-            recommendation="Disable directory listing by removing 'autoindex on' or setting it to 'autoindex off'."
+            description="Включен просмотр содержимого директорий, что позволяет злоумышленникам просматривать содержимое каталогов на вашем сервере.",
+            recommendation="Отключите просмотр директорий, удалив 'autoindex on' или установив 'autoindex off'."
         )
 
 class NoRequestSizeLimitVulnerability(Vulnerability):
@@ -14,8 +14,8 @@ class NoRequestSizeLimitVulnerability(Vulnerability):
         super().__init__(
             name="No Request Size Limit",
             severity="medium",
-            description="No request size limit is defined, which could allow attackers to perform denial of service attacks by sending large requests.",
-            recommendation="Set a reasonable request size limit using 'client_max_body_size' directive."
+            description="Не определен лимит размера запроса, что может позволить злоумышленникам выполнять атаки типа 'отказ в обслуживании' путем отправки больших запросов.",
+            recommendation="Установите разумное ограничение размера запроса, используя директиву 'client_max_body_size'."
         )
 
 class UnsafePHPExecutionVulnerability(Vulnerability):
@@ -23,6 +23,6 @@ class UnsafePHPExecutionVulnerability(Vulnerability):
         super().__init__(
             name="Unsafe PHP Execution Configuration",
             severity="high",
-            description="The PHP configuration is vulnerable to file upload attacks that could lead to remote code execution.",
-            recommendation="Add 'try_files $uri =404;' before the fastcgi_pass directive to prevent execution of non-existent PHP files."
+            description="Конфигурация PHP уязвима для атак через загрузку файлов, что может привести к удаленному выполнению кода.",
+            recommendation="Добавьте 'try_files $uri =404;' перед директивой fastcgi_pass для предотвращения выполнения несуществующих PHP файлов."
         )
