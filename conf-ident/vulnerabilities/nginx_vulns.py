@@ -26,3 +26,30 @@ class UnsafePHPExecutionVulnerability(Vulnerability):
             description="Конфигурация PHP уязвима для атак через загрузку файлов, что может привести к удаленному выполнению кода.",
             recommendation="Добавьте 'try_files $uri =404;' перед директивой fastcgi_pass для предотвращения выполнения несуществующих PHP файлов."
         )
+
+class MIMESniffingVulnerability(Vulnerability):
+    def __init__(self):
+        super().__init__(
+            name="MIME Sniffing Enabled",
+            severity="medium",
+            description="Отсутствует защита от MIME-снифинга, что может позволить браузерам интерпретировать файлы не по их фактическому MIME-типу.",
+            recommendation="Добавьте заголовок 'X-Content-Type-Options: nosniff' для предотвращения MIME-снифинга."
+        )
+
+class ClickjackingVulnerability(Vulnerability):
+    def __init__(self):
+        super().__init__(
+            name="Clickjacking Protection Missing",
+            severity="medium",
+            description="Отсутствует защита от кликджекинга, что позволяет встраивать ваш сайт в iframe на других сайтах.",
+            recommendation="Добавьте заголовок 'X-Frame-Options: SAMEORIGIN' для защиты от кликджекинга."
+        )
+
+class SSLTLSMisconfigurationVulnerability(Vulnerability):
+    def __init__(self):
+        super().__init__(
+            name="SSL/TLS Misconfiguration",
+            severity="high",
+            description="Обнаружены небезопасные настройки SSL/TLS, что может сделать соединение уязвимым для атак.",
+            recommendation="Используйте только TLS 1.2+ и безопасные шифры, отключите устаревшие протоколы."
+        )
