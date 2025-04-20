@@ -25,3 +25,9 @@ pip install -r requirements.txt
 ```bash
 conf-ident/main.py --server-type <nginx/apache> --config-path /path/to/configs --output <console/json/html>
 ```
+
+## Лицензия
+
+CONFident_tool распространяется под лицензией Apache License 2.0. Полный текст лицензии доступен в файле [LICENSE](LICENSE).
+
+Copyright 2025 CONFident_tool
