@@ -18,6 +18,7 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = os.urandom(24)
 app.config['SCAN_HISTORY'] = []
 app.config['MAX_HISTORY_SIZE'] = 10
+app.config['REPORTS_DIR'] = os.path.join(os.getcwd(), 'reports')
 
 @app.route('/')
 def index():
@@ -90,11 +91,11 @@ def scan():
     
     session['last_scan_id'] = scan_id
     
+    os.makedirs(app.config['REPORTS_DIR'], exist_ok=True)
+    
     if output_format == 'json':
         filename = f"vulnerability_report_{timestamp}.json"
-        report_path = os.path.join(os.getcwd(), "reports", filename)
-        
-        os.makedirs(os.path.join(os.getcwd(), "reports"), exist_ok=True)
+        report_path = os.path.join(app.config['REPORTS_DIR'], filename)
         
         report = ReportGenerator(vulnerabilities, output_format='json')
         report.generate(output_path=report_path)
@@ -103,9 +104,7 @@ def scan():
     
     elif output_format == 'html':
         filename = f"vulnerability_report_{timestamp}.html"
-        report_path = os.path.join(os.getcwd(), "reports", filename)
-        
-        os.makedirs(os.path.join(os.getcwd(), "reports"), exist_ok=True)
+        report_path = os.path.join(app.config['REPORTS_DIR'], filename)
         
         report = ReportGenerator(vulnerabilities, output_format='html')
         report.generate(output_path=report_path)
@@ -115,7 +114,7 @@ def scan():
                               count=len(vulnerabilities),
                               server_type=server_type,
                               config_path=config_path or "По умолчанию",
-                              report_path=report_path,
+                              report_path=filename,
                               scan_id=scan_id,
                               history=app.config['SCAN_HISTORY'],
                               datetime=datetime,
@@ -143,7 +142,8 @@ def scan():
 @app.route('/download/<path:filename>')
 def download_report(filename):
     try:
-        return send_file(filename, as_attachment=True)
+        report_path = os.path.join(app.config['REPORTS_DIR'], os.path.basename(filename))
+        return send_file(report_path, as_attachment=True)
     except Exception as e:
         flash(f'Ошибка при скачивании файла: {str(e)}', 'error')
         return redirect(url_for('index'))
@@ -185,16 +185,16 @@ def download_pdf_report():
         temp_html_path = temp_html.name
     
     pdf_filename = f"vulnerability_report_{scan_data['timestamp']}.pdf"
-    pdf_path = os.path.join(os.getcwd(), "reports", pdf_filename)
+    pdf_path = os.path.join(app.config['REPORTS_DIR'], pdf_filename)
     
-    os.makedirs(os.path.join(os.getcwd(), "reports"), exist_ok=True)
+    os.makedirs(app.config['REPORTS_DIR'], exist_ok=True)
     
     try:
         pdfkit.from_file(temp_html_path, pdf_path)
-        os.unlink(temp_html_path)  # Remove temporary HTML file
+        os.unlink(temp_html_path)
         return send_file(pdf_path, as_attachment=True)
     except Exception as e:
-        os.unlink(temp_html_path)  # Clean up even on error
+        os.unlink(temp_html_path)
         flash(f'Ошибка при создании PDF: {str(e)}', 'error')
         return redirect(url_for('index'))
 
