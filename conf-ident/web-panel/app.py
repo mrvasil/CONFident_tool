@@ -12,7 +12,7 @@ import uuid
 from scanners.nginx_scanner import NginxScanner
 from scanners.apache_scanner import ApacheScanner
 from utils.report_generator import ReportGenerator
-import pdfkit
+from utils.pdf_generator import PDFReportGenerator
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = os.urandom(24)
@@ -165,36 +165,16 @@ def download_pdf_report():
         flash('Данные сканирования не найдены', 'error')
         return redirect(url_for('index'))
     
-    for vuln in scan_data['vulnerabilities']:
-        vuln.title = vuln.name
-    
-    with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp_html:
-        html_content = render_template(
-            'pdf_report.html',
-            vulnerabilities=scan_data['vulnerabilities'],
-            count=scan_data['count'],
-            server_type=scan_data['server_type'],
-            config_path=scan_data['config_path'],
-            timestamp=scan_data['timestamp'],
-            high_count=scan_data['high_count'],
-            medium_count=scan_data['medium_count'],
-            low_count=scan_data['low_count'],
-            scanned_configs_count=scan_data.get('scanned_configs_count', 0)
-        )
-        temp_html.write(html_content.encode('utf-8'))
-        temp_html_path = temp_html.name
-    
     pdf_filename = f"vulnerability_report_{scan_data['timestamp']}.pdf"
     pdf_path = os.path.join(app.config['REPORTS_DIR'], pdf_filename)
     
     os.makedirs(app.config['REPORTS_DIR'], exist_ok=True)
     
     try:
-        pdfkit.from_file(temp_html_path, pdf_path)
-        os.unlink(temp_html_path)
+        pdf_generator = PDFReportGenerator(scan_data)
+        pdf_generator.generate(pdf_path)
         return send_file(pdf_path, as_attachment=True)
     except Exception as e:
-        os.unlink(temp_html_path)
         flash(f'Ошибка при создании PDF: {str(e)}', 'error')
         return redirect(url_for('index'))
 
