@@ -82,7 +82,9 @@ def scan():
         'high_count': high_count,
         'medium_count': medium_count,
         'low_count': low_count,
-        'scanned_configs_count': scanner.scanned_files_count
+        'scanned_configs_count': scanner.scanned_files_count,
+        'safe_files': safe_files_list,
+        'safe_files_count': safe_files_count
     }
     
     app.config['SCAN_HISTORY'].insert(0, scan_record)
@@ -137,7 +139,9 @@ def scan():
                           high_count=high_count,
                           medium_count=medium_count,
                           low_count=low_count,
-                          scanned_configs_count=scanner.scanned_files_count)
+                          scanned_configs_count=scanner.scanned_files_count,
+                          safe_files=safe_files_list,
+                          safe_files_count=safe_files_count)
 
 @app.route('/download/<path:filename>')
 def download_report(filename):
@@ -220,7 +224,9 @@ def view_scan(scan_id):
                           high_count=scan_data['high_count'],
                           medium_count=scan_data['medium_count'],
                           low_count=scan_data['low_count'],
-                          scanned_configs_count=scan_data.get('scanned_configs_count', 0))
+                          scanned_configs_count=scan_data.get('scanned_configs_count', 0),
+                          safe_files=scan_data.get('safe_files', []),
+                          safe_files_count=scan_data.get('safe_files_count', 0))
 
 @app.route('/delete_scan/<scan_id>')
 def delete_scan(scan_id):
