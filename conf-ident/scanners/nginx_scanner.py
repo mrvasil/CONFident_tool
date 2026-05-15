@@ -7,7 +7,13 @@ from vulnerabilities.nginx_vulns import (
     UnsafePHPExecutionVulnerability,
     MIMESniffingVulnerability,
     ClickjackingVulnerability,
-    SSLTLSMisconfigurationVulnerability
+    SSLTLSMisconfigurationVulnerability,
+    ServerTokensExposedVulnerability,
+    XSSProtectionMissingVulnerability,
+    HSTSMissingVulnerability,
+    ContentSecurityPolicyMissingVulnerability,
+    ReferrerPolicyMissingVulnerability,
+    PermissionsPolicyMissingVulnerability
 )
 
 class NginxScanner(BaseScanner):
@@ -57,6 +63,12 @@ class NginxScanner(BaseScanner):
         self._check_mime_sniffing(config_data, config_file)
         self._check_clickjacking(config_data, config_file)
         self._check_ssl_tls_config(config_data, config_file)
+        self._check_server_tokens(config_data, config_file)
+        self._check_xss_protection(config_data, config_file)
+        self._check_hsts(config_data, config_file)
+        self._check_csp(config_data, config_file)
+        self._check_referrer_policy(config_data, config_file)
+        self._check_permissions_policy(config_data, config_file)
     
 
     #Vulnerabilities
@@ -140,4 +152,40 @@ class NginxScanner(BaseScanner):
         if has_vulnerability:
             vuln = SSLTLSMisconfigurationVulnerability()
             vuln.add_affected_file(config_file, line_numbers)
+            self.vulnerabilities.append(vuln)
+
+    def _check_server_tokens(self, config_data, config_file):
+        if not re.search(r'server_tokens\s+off', config_data):
+            vuln = ServerTokensExposedVulnerability()
+            vuln.add_affected_file(config_file)
+            self.vulnerabilities.append(vuln)
+
+    def _check_xss_protection(self, config_data, config_file):
+        if not re.search(r'add_header\s+X-XSS-Protection', config_data):
+            vuln = XSSProtectionMissingVulnerability()
+            vuln.add_affected_file(config_file)
+            self.vulnerabilities.append(vuln)
+
+    def _check_hsts(self, config_data, config_file):
+        if re.search(r'ssl_certificate', config_data) and not re.search(r'Strict-Transport-Security', config_data):
+            vuln = HSTSMissingVulnerability()
+            vuln.add_affected_file(config_file)
+            self.vulnerabilities.append(vuln)
+
+    def _check_csp(self, config_data, config_file):
+        if not re.search(r'add_header\s+Content-Security-Policy', config_data):
+            vuln = ContentSecurityPolicyMissingVulnerability()
+            vuln.add_affected_file(config_file)
+            self.vulnerabilities.append(vuln)
+
+    def _check_referrer_policy(self, config_data, config_file):
+        if not re.search(r'add_header\s+Referrer-Policy', config_data):
+            vuln = ReferrerPolicyMissingVulnerability()
+            vuln.add_affected_file(config_file)
+            self.vulnerabilities.append(vuln)
+
+    def _check_permissions_policy(self, config_data, config_file):
+        if not re.search(r'add_header\s+(Permissions-Policy|Feature-Policy)', config_data):
+            vuln = PermissionsPolicyMissingVulnerability()
+            vuln.add_affected_file(config_file)
             self.vulnerabilities.append(vuln)
